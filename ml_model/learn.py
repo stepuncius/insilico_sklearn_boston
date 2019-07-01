@@ -1,7 +1,6 @@
 import hashlib
 import pickle
 import random
-from io import BytesIO
 from typing import Dict, Tuple
 
 import numpy as np
@@ -29,7 +28,7 @@ def get_dataset(seed: int) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]
         }
 
     return boston_dataset_factory(boston_train_data, boston_train_target), \
-        boston_dataset_factory(boston_test_data, boston_test_target)
+           boston_dataset_factory(boston_test_data, boston_test_target)
 
 
 def calculate_metrics(model: KNeighborsRegressor, test_dataset: Dict[str, np.ndarray]) -> Dict[str, float]:
@@ -49,21 +48,22 @@ def learn(k: int, dataset: Dict[str, np.ndarray]) -> KNeighborsRegressor:
 
 
 def save_model(model: KNeighborsRegressor, metrics: Dict[str, float], neighbors_count: int, seed: int) -> None:
-    serialized_model = BytesIO()
-    pickle.dump(model, serialized_model)
-    md5 = hashlib.md5()
-    md5.update(serialized_model.read())
+    with open('best_model.pckl', 'wb') as dmp_file:
+        pickle.dump(model, dmp_file)
+
+    with open('best_model.pckl', 'rb') as dmp_file:
+        # md5 is important to protect server from malicious pickle
+        md5 = hashlib.md5()
+        md5.update(dmp_file.read(-1))
     md5_string = md5.hexdigest()
     yaml_metrics = {k: float(v) for k, v in metrics.items()}
-    # md5 is important to protect server from malicious pickle
     yaml_metrics["serialized_model_md5"] = md5_string
     yaml_metrics["neghbors_count"] = neighbors_count
     yaml_metrics["random_seed"] = seed
-    with open('best_model.pckl', 'wb') as dmp_file:
-        dmp_file.write(serialized_model.read())
+
     with open('best_model_info.yaml', 'w') as md5_file:
         import yaml
-        yaml.safe_dump(yaml_metrics, md5_file)
+        yaml.dump(yaml_metrics, md5_file)
 
 
 def main():
