@@ -10,5 +10,7 @@ ADD ./requirements.txt /flask_app/requirements.txt
 
 RUN pip install -r /flask_app/requirements.txt
 
+WORKDIR /flask_app
+
 CMD python3 /flask_app/app.py
 

@@ -1,0 +1,26 @@
+version: '3.2'
+volumes:
+  psql:
+services:
+  db:
+    image: postgres
+    expose:
+      - 5432
+    environment:
+      POSTGRES_PASSWORD: "4VZ8f5v0PmZzBop6571JcaBhzhk3wM"
+      POSTGRES_DB: "sklearn_app"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - type: volume
+        source: psql
+        target: "/var/lib/postgresql/data/pgdata"
+
+  flask_app:
+    build: .
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      FLASK_ENV: "development"
+    depends_on:
+      - db
+    restart: "always"

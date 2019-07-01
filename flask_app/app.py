@@ -19,7 +19,7 @@ class MLAPI(Resource):
     def post(self):
         vector = parser.parse_args()
         prediction = float(ml_model.predict(np.array([v for v in vector.values()]).reshape(1, -1)))
-        db_log = Prediction(input_array=json.dumps(vector), prediction=prediction,
+        db_log = Prediction(input_data=json.dumps(vector), prediction=prediction,
                             predicted_at=datetime.datetime.now())
         db.session.add(db_log)
         db.session.commit()
@@ -35,7 +35,7 @@ class LogAPI(Resource):
                 {
                     'predicted_at': str(entry.predicted_at),
                     'prediction': entry.prediction,
-                    'input_data': json.loads(entry.input_array)
+                    'input_data': json.loads(entry.input_data)
                 }
             )
         return response
@@ -45,4 +45,5 @@ api.add_resource(MLAPI, '/predict')
 api.add_resource(LogAPI, '/show')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    db.create_all()
+    app.run(host='0.0.0.0', port=5000)
